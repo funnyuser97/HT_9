@@ -1,5 +1,3 @@
-# program by Stupka Bogdan
-
 import argparse
 import logging
 import config
@@ -21,36 +19,45 @@ class catalog(object):
     new_list_data = []
 
     def received_parametrs(self):
-
-        arg_parser = argparse.ArgumentParser(description='Great Description To Be Here')
+        arg_parser = argparse.ArgumentParser (description='Great Description To Be Here')
         try:
-            arg_parser.add_argument("-c", "--catalog", type=str,
-                                    choices=config.choose_categoty,
-                                    default=config.default_parametr,
-                                    help="category for parsing")
+            arg_parser.add_argument ("-c", "--catalog", type=str, choices=config.choose_categoty,
+                                     default=config.default_parametr, help="category for parsing")
         except Exception as i:
-            logging.error("Error :", i)
+            logging.error ("Error :", i)
 
-        options = arg_parser.parse_args()
-        logging.info('Parameters console received!')
-        print("Parametrs  console received!")
+        options = arg_parser.parse_args ()
+        logging.info ('Parameters console received!')
+        print ("Parametrs  console received!")
 
         catalog.name_catalog = options.catalog
 
     def request_catalog(self):
-        print('Receive data of catalog...')
+        print ('Receive data of catalog...')
 
         my_catalog = catalog.name_catalog
 
-        exp_url = config.url_category[:38] + my_catalog + config.url_category[38:]
-        try:
-            response = request.urlopen(exp_url)
-            catalog.data = json.loads(response.read ())
-            print('ALL OK! All id categoty {} received!'.format(my_catalog))
-            logging.info('ALL OK! All id categoty {} received!'.format (my_catalog))
-        except Exception as my_error:
-            logging.error('This is an error message :', my_error)
-            print('error :', my_error)
+        if catalog.name_catalog == 'all':
+            for my_catalog in config.choose_categoty[:-1]:
+                exp_url = config.url_category[:38] + my_catalog + config.url_category[38:]
+                try:
+                    response = request.urlopen (exp_url)
+                    catalog.data += json.loads (response.read ())
+                    print ('ALL OK! All id categoty {} received!'.format (my_catalog))
+                    logging.info ('ALL OK! All id categoty {} received!'.format (my_catalog))
+                except Exception as my_error:
+                    logging.error ('This is an error message :', my_error)
+                    print ('error :', my_error)
+        else:
+            exp_url = config.url_category[:38] + my_catalog + config.url_category[38:]
+            try:
+                response = request.urlopen (exp_url)
+                catalog.data = json.loads (response.read ())
+                print ('ALL OK! All id categoty {} received!'.format (my_catalog))
+                logging.info ('ALL OK! All id categoty {} received!'.format (my_catalog))
+            except Exception as my_error:
+                logging.error ('This is an error message :', my_error)
+                print ('error :', my_error)
 
     def request_items(self):
 
@@ -94,30 +101,6 @@ class catalog(object):
             writer.writerows (catalog.new_list_data)
             logging.info ('Data write to file report.csv !')
 
-    def to_html(self):
-
-        list_row = []
-
-        with open (config.file_report) as csvfile:
-            reader = csv.DictReader (csvfile)
-            print(type(reader), reader)
-            columns = ['by', 'descendants', 'id', 'kids', 'score', 'time', 'text', 'title',
-                       'parts', 'type', 'url']
-            new_row = '<tr>\n'+ '<td>'+'by'+ '</td>\n'+ '<td>'+ 'descendants'+ '</td>\n'+ '<td>'+ 'id'+ '</td>\n'+ '<td>'+ 'kids'+ '</td>\n'+ '<td>'+ 'score'+ '</td>\n'+ '<td>'+ 'time'+ '</td>\n'+ '<td>'+ 'text'+ '</td>\n'+ '<td>'+'title'+ '</td>\n'+ '<td>'+ 'parts'+ '</td>\n'+ '<td>'+ 'type'+ '</td>\n'+ '<td>'+'url'+ '</td>' + '\n'+ '</tr>\n'
-            list_row.append (new_row)
-            print(columns)
-            for row in reader:
-                new_row = '<tr>\n'+ '<td>'+row['by']+ '</td>\n'+ '<td>'+ row['descendants']+ '</td>\n'+ '<td>'+ row['id']+ '</td>\n'+ '<td>'+ row['kids']+ '</td>\n'+ '<td>'+ row['score']+ '</td>\n'+ '<td>'+ row['time']+ '</td>\n'+ '<td>'+ row['text']+ '</td>\n'+ '<td>'+row['title']+ '</td>\n'+ '<td>'+ row['parts']+ '</td>\n'+ '<td>'+ row['type']+ '</td>\n'+ '<td>'+row['url']+ '</td>' + '\n'+ '</tr>\n'
-                print(new_row)
-                list_row.append(new_row)
-            print(list_row)
-
-        html_file = open('file.html', 'w')
-        for item in list_row:
-            html_file.write(item)
-
-        html_file.close()
-
 
 if __name__ == "__main__":
     log_format = "('%(asctime)s - %(name)s - %(levelname)s - %(message)s')"
@@ -134,6 +117,4 @@ if __name__ == "__main__":
     first.filter()
     print('Write data to file...')
     print(first.new_list_data)
-    first.file_write()
     print('ALL OK! Data recorded')
-    first.to_html()
